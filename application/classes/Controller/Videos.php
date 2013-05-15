@@ -28,6 +28,7 @@ class Controller_Videos extends Controller_App {
       'filename' => 'source.mp4',
       'input_path' => '/var/www/davos/application/data/video/',
       'output_path' => '/var/www/davos/application/data/video/frames/',
+      'output_extension' => 'jpg',
       'frame_rate' => 25,
     ));
 

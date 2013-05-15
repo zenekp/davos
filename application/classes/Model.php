@@ -2,7 +2,7 @@
 
 abstract class Model extends Kohana_Model {
 
-  protected $_debug = FALSE;
+  protected $_debug = TRUE;
 
   protected $_data = array();
 
