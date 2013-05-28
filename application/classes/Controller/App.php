@@ -6,31 +6,192 @@ class Controller_App extends Controller {
 
   protected $_source_image;
 
+  protected $_fb_user_id;
+
+  protected $_users_path;
+
+  public $binary_path = '/opt/local/bin/';
+
+  public $layout;
+
+  public $view;
+
+  public function before()
+  {
+    $this->_users_path = APPPATH.'data'.DIRECTORY_SEPARATOR.'user'.DIRECTORY_SEPARATOR;
+
+    $this->layout = View::factory('layout')->set(array(
+      'content' => '',
+    ));
+  }
+
+  public function after()
+  {
+    $this->layout->set(array(
+      'content' => $this->view,
+    ));
+
+    $this->response->body($this->layout);
+  }
+
   public function action_index()
+  {
+    $this->view = View::factory('index')->set(array(
+      'flash' => Session::instance()->get_once('flash'),
+    ));
+  }
+
+  protected function _create_user_folders()
   {
     try
     {
-      $filename = 'source.png';
-      $binary_path  = '/opt/local/bin/';
-      $input_path = '/var/www/davos/application/data/user/12345/image/';
-      $video_path = '/var/www/davos/application/data/video/frames/';
-      $distorted_path = '/var/www/davos/application/data/user/12345/image/distorted/';
-      $merged_path = '/var/www/davos/application/data/user/12345/image/merged/';
+      $flag = TRUE;
 
+      // Do necessary folder setup for the user
+      if ( ! file_exists($this->_users_path.$this->_fb_user_id) )
+      {
+        if ( ! mkdir($this->_users_path.$this->_fb_user_id) ) { $flag = FALSE; }
+
+        if ( ! mkdir($this->_users_path.$this->_fb_user_id.DIRECTORY_SEPARATOR.'image') ) { $flag = FALSE; }
+
+        if ( ! mkdir($this->_users_path.$this->_fb_user_id.DIRECTORY_SEPARATOR.'image'.DIRECTORY_SEPARATOR.'distorted') ) { $flag = FALSE; }
+
+        if ( ! mkdir($this->_users_path.$this->_fb_user_id.DIRECTORY_SEPARATOR.'image'.DIRECTORY_SEPARATOR.'merged') ) { $flag = FALSE; }
+      }
+
+      $video_path = DOCROOT.'media'.DIRECTORY_SEPARATOR.'video'.DIRECTORY_SEPARATOR.$this->_fb_user_id;
+
+      if ( ! file_exists($video_path) )
+      {
+        if ( ! mkdir($video_path) ) { $flag = FALSE; }
+
+        if ( ! chmod($video_path, 0777) ) { $flag = FALSE; }
+      }
+
+      if ( $flag === FALSE )
+      {
+        throw new Exception('Folder structure couldnt be created.');
+      }
+    }
+    catch ( Exception $e )
+    {
+      Session::instance()->write('flash', $e->getMessage());
+
+      $this->redirect('/');
+    }
+  }
+
+  protected function _get_facebook_image()
+  {
+    try
+    {
+      // Get the users facebook profile picture
+      $picture_url = 'http://graph.facebook.com/'.$this->_fb_user_id.'/picture?type=large';
+
+      $image_data = file_get_contents($picture_url);
+
+      if ( $image_data === FALSE )
+      {
+        throw new Exception('Facebook profile picture couldnt be found.');
+      }
+
+      $result = file_put_contents( $this->_users_path.$this->_fb_user_id.DIRECTORY_SEPARATOR.'image'.DIRECTORY_SEPARATOR.'profile.jpg', $image_data );
+
+      if ( $result === FALSE )
+      {
+        throw new Exception('Facebook profile picture couldnt be created.');
+      }
+    }
+    catch (Exception $e)
+    {
+      Session::instance()->write('flash', $e->getMessage());
+
+      $this->redirect('/');
+    }
+  }
+
+  protected function _create_source_image()
+  {
+    $this->_gm_resize = Model::factory('GM')->init(array(
+      'binary_path' => $this->binary_path,
+      'width' => 190,
+      'height' => 190,
+      'input_path' => $this->_users_path.$this->_fb_user_id.DIRECTORY_SEPARATOR.'image'.DIRECTORY_SEPARATOR,
+      'input_file' => 'profile',
+      'input_extension' => 'jpg',
+      'output_path' => $this->_users_path.$this->_fb_user_id.DIRECTORY_SEPARATOR.'image'.DIRECTORY_SEPARATOR,
+      'output_file' => 'profile_resized',
+      'output_extension' => 'jpg',
+    ));
+
+    $this->_gm_resize->resize();
+
+    $this->_gm_merge = Model::factory('GM')->init(array(
+      'binary_path' => $this->binary_path,
+      'image_path' => APPPATH.'data'.DIRECTORY_SEPARATOR.'image'.DIRECTORY_SEPARATOR,
+      'image_file' => 'blank_profile',
+      'image_extension' => 'png',
+      'overlay_path' => $this->_users_path.$this->_fb_user_id.DIRECTORY_SEPARATOR.'image'.DIRECTORY_SEPARATOR,
+      'overlay_file' => 'profile',
+      'overlay_extension' => 'jpg',
+      'output_path' => $this->_users_path.$this->_fb_user_id.DIRECTORY_SEPARATOR.'image'.DIRECTORY_SEPARATOR,
+      'output_file' => 'source',
+      'output_extension' => 'png',
+      'x_offset' => 345,
+      'y_offset' => 170,
+      'offset' => '',
+      'num' => '',
+    ));
+
+    $this->_gm_merge->merge();
+  }
+
+
+  public function action_setup()
+  {
+    $post = $this->request->post();
+
+    if ( empty($post) )
+    {
+      $this->redirect('/');
+    }
+
+    // Validate post data
+    if ( ! isset($post['user_id']) && empty($post['user_id']) )
+    {
+      Session::instance()->write('flash', 'Couldnt retrieve Facebook User ID');
+
+      $this->redirect('/');
+    }
+
+    $this->_fb_user_id = $post['user_id'];
+
+    $this->_create_user_folders();
+
+    $this->_get_facebook_image();
+
+    $this->_create_source_image();
+
+    try
+    {
       $this->_tracking_data = $this->_get_tracking_data();
 
       $this->_source_image = $this->_get_source_image(array(
-        'filename' => $filename,
-        'input_path' => $input_path,
+        'input_extension' => 'png',
+        'input_file' => 'source',
+        'input_path' => $this->_users_path.$this->_fb_user_id.DIRECTORY_SEPARATOR.'image'.DIRECTORY_SEPARATOR,
       ));
 
       $this->_gm_distort = Model::factory('GM')->init(array(
-        'binary_path' => $binary_path,
+        'binary_path' => $this->binary_path,
         'width' => $this->_source_image->width,
         'height' => $this->_source_image->height,
-        'filename' => $filename,
-        'input_path' => $input_path,
-        'output_path' => $distorted_path,
+        'input_path' => $this->_users_path.$this->_fb_user_id.DIRECTORY_SEPARATOR.'image'.DIRECTORY_SEPARATOR,
+        'input_file' => 'source',
+        'input_extension' => 'png',
+        'output_path' => $this->_users_path.$this->_fb_user_id.DIRECTORY_SEPARATOR.'image'.DIRECTORY_SEPARATOR.'distorted'.DIRECTORY_SEPARATOR,
+        'output_file' => '',
+        'output_extension' => 'png',
         'blox' => 0,                            // bottom-left-origin-x
         'bloy' => $this->_source_image->height, // bottom-left-origin-y
         'tlox' => 0,                            // top-left-origin-x
@@ -42,42 +203,61 @@ class Controller_App extends Controller {
       ));
 
       $this->_gm_merge = Model::factory('GM')->init(array(
-        'binary_path' => $binary_path,
-        'image_path' => $video_path,
-        'overlay_path' => $distorted_path,
-        'output_path' => $merged_path,
+        'binary_path' => $this->binary_path,
+        'image_path' => APPPATH.'data'.DIRECTORY_SEPARATOR.'video'.DIRECTORY_SEPARATOR.'frames'.DIRECTORY_SEPARATOR,
+        'image_file' => '',
+        'image_extension' => 'jpg',
+        'overlay_path' => $this->_users_path.$this->_fb_user_id.DIRECTORY_SEPARATOR.'image'.DIRECTORY_SEPARATOR.'distorted'.DIRECTORY_SEPARATOR,
+        'overlay_file' => '',
+        'overlay_extension' => 'png',
+        'output_path' => $this->_users_path.$this->_fb_user_id.DIRECTORY_SEPARATOR.'image'.DIRECTORY_SEPARATOR.'merged'.DIRECTORY_SEPARATOR,
+        'output_file' => '',
+        'output_extension' => 'jpg',
+        'x_offset' => 0,
+        'y_offset' => 0,
       ));
 
-      $total_token = Profiler::start('davos', 'total');
+      // $total_token = Profiler::start('davos', 'total');
 
       $this->_distort_merge();
 
-      Profiler::stop($total_token);
+      // Profiler::stop($total_token);
 
       $ffmpeg = Model::factory('FFmpeg');
 
       $ffmpeg->init(array(
-        'binary_path' => '/opt/local/bin/',
+        'binary_path' => $this->binary_path,
         'filename' => 'source.mp4',
-        'input_path' => '/var/www/davos/application/data/user/',
-        'output_path' => '/var/www/davos/application/data/user/',
+        'input_path' => $this->_users_path,
+        'output_path' => DOCROOT.'media'.DIRECTORY_SEPARATOR.'video'.DIRECTORY_SEPARATOR,
         'output_extension' => 'mp4',
-        'bit_rate' => '\2400k',
+        'bit_rate' => '2400k',
       ));
 
       $ffmpeg->combine_frames(array(
-        'user_id' => '12345',
+        'user_id' => $this->_fb_user_id,
       ));
 
-      $stats = Profiler::stats(array($total_token));
-
-      var_dump($stats);
-      exit;
+      // $stats = Profiler::stats(array($total_token));
     }
     catch (Exception $e)
     {
       die($e->getMessage());
     }
+
+    $this->redirect('/app/video/'.$this->_fb_user_id);
+  }
+
+  public function action_video()
+  {
+    if ( ! $id = $this->request->param('id', FALSE) )
+    {
+      die('No Facebook User ID Set');
+    }
+
+    $this->view = View::factory('video')->set(array(
+      'id' => $id,
+    ));
   }
 
   protected function _distort_merge()
@@ -151,12 +331,17 @@ class Controller_App extends Controller {
       throw new Exception('No input path set for image');
     }
 
-    if ( ! isset($data['filename']) || empty($data['filename']) ) {
+    if ( ! isset($data['input_file']) || empty($data['input_file']) ) {
       throw new Exception('No input file set for image');
     }
 
+    if ( ! isset($data['input_extension']) || empty($data['input_extension']) ) {
+      throw new Exception('No input extension set for image');
+    }
+
     $image = Model::factory('image')->init(array(
-      'filename' => $data['filename'],
+      'input_extension' => $data['input_extension'],
+      'input_file' => $data['input_file'],
       'input_path' => $data['input_path'],
     ));
 
