@@ -230,13 +230,19 @@ class Controller_App extends Controller {
         'filename' => 'source.mp4',
         'input_path' => $this->_users_path,
         'output_path' => DOCROOT.'media'.DIRECTORY_SEPARATOR.'video'.DIRECTORY_SEPARATOR,
+        'output_file' => 'soundless',
         'output_extension' => 'mp4',
         'bit_rate' => '2400k',
       ));
 
       $ffmpeg->combine_frames(array(
         'user_id' => $this->_fb_user_id,
+        'codec' => 'libx264', //'mpeg4'
       ));
+
+      $this->_add_audio();
+
+      $this->_create_other_formats();
 
       // $stats = Profiler::stats(array($total_token));
     }
@@ -246,6 +252,55 @@ class Controller_App extends Controller {
     }
 
     $this->redirect('/app/video/'.$this->_fb_user_id);
+  }
+
+  protected function _add_audio()
+  {
+    $ffmpeg = Model::factory('FFmpeg');
+
+    $ffmpeg->init(array(
+      'binary_path' => $this->binary_path,
+      'input_path' => DOCROOT.'media'.DIRECTORY_SEPARATOR.'video'.DIRECTORY_SEPARATOR.$this->_fb_user_id.DIRECTORY_SEPARATOR,
+      'input_file' => 'soundless',
+      'input_extension' => 'mp4',
+      'output_path' => DOCROOT.'media'.DIRECTORY_SEPARATOR.'video'.DIRECTORY_SEPARATOR.$this->_fb_user_id.DIRECTORY_SEPARATOR,
+      'output_file' => 'output',
+      'output_extension' => 'mp4',
+      'audio_path' => APPPATH.'data'.DIRECTORY_SEPARATOR.'audio'.DIRECTORY_SEPARATOR,
+      'audio_file' => 'audio',
+      'audio_extension' => 'mp3',
+      'vcodec' => 'libx264',
+      'acodec' => 'libfaac',
+      'audio_frequency' => '48000', // -ar
+    ));
+
+    $ffmpeg->add_audio();
+  }
+
+  protected function _create_other_formats()
+  {
+    $ffmpeg = Model::factory('FFmpeg');
+
+    $ffmpeg->init(array(
+      'binary_path' => $this->binary_path,
+      'input_path' => DOCROOT.'media'.DIRECTORY_SEPARATOR.'video'.DIRECTORY_SEPARATOR.$this->_fb_user_id.DIRECTORY_SEPARATOR,
+      'input_file' => 'output',
+      'input_extension' => 'mp4',
+      'output_path' => DOCROOT.'media'.DIRECTORY_SEPARATOR.'video'.DIRECTORY_SEPARATOR,
+      'bit_rate' => '2400k',
+    ));
+
+    $ffmpeg->convert(array(
+      'user_id' => $this->_fb_user_id,
+      'output_extension' => 'ogg',
+      'codec' => 'libtheora',
+    ));
+
+    $ffmpeg->convert(array(
+      'user_id' => $this->_fb_user_id,
+      'output_extension' => 'webm',
+      'codec' => 'libvpx',
+    ));
   }
 
   public function action_video()
