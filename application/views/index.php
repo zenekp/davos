@@ -4,7 +4,7 @@
   <h2><?php echo $flash ?></h2>
 <?php endif ?>
 
-<form action="/app/setup" method="post" accept-charset="utf-8" class="js-fb-details" >
+<form action="/davos/app/setup" method="post" accept-charset="utf-8" class="js-fb-details" >
   <input type="hidden" name="access_token" value="" id="fb_access_token" />
   <input type="hidden" name="signed_request" value="" id="fb_signed_request" />
   <input type="hidden" name="user_id" value="" id="fb_user_id"/>
