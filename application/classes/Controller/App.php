@@ -16,16 +16,6 @@ class Controller_App extends Controller {
 
   public $view;
 
-	public static function redirect($uri = '', $code = 302)
-	{
-	  if ( strpos($_SERVER['HTTP_HOST'], 'labs.fivebyfiveuk.com') !== FALSE )
-	  {
-	    $uri = '/davos'.$uri;
-	  }
-
-		return HTTP::redirect($uri, $code);
-	}
-
   public function before()
   {
     $this->_users_path = APPPATH.'data'.DIRECTORY_SEPARATOR.'user'.DIRECTORY_SEPARATOR;
