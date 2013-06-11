@@ -26,8 +26,8 @@ class Controller_Videos extends Controller_App {
     $ffmpeg->init(array(
       'binary_path' => Kohana::$config->load('app.ffmpeg_path'),
       'filename' => 'source.mp4',
-      'input_path' => '/var/www/davos/application/data/video/',
-      'output_path' => '/var/www/davos/application/data/video/frames/',
+      'input_path' => APPPATH.'data'.DIRECTORY_SEPARATOR.'video'.DIRECTORY_SEPARATOR,
+      'output_path' => APPPATH.'data'.DIRECTORY_SEPARATOR.'video'.DIRECTORY_SEPARATOR.'frames'.DIRECTORY_SEPARATOR,
       'output_extension' => 'jpg',
       'frame_rate' => 25,
     ));
@@ -42,8 +42,8 @@ class Controller_Videos extends Controller_App {
     $ffmpeg->init(array(
       'binary_path' => Kohana::$config->load('app.ffmpeg_path'),
       'filename' => 'source.mp4',
-      'input_path' => '/var/www/davos/application/data/video/',
-      'output_path' => '/var/www/davos/application/data/audio/',
+      'input_path' => APPPATH.'data'.DIRECTORY_SEPARATOR.'video'.DIRECTORY_SEPARATOR,
+      'output_path' => APPPATH.'data'.DIRECTORY_SEPARATOR.'audio'.DIRECTORY_SEPARATOR,
       'output_extension' => 'mp3',
     ));
 
