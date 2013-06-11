@@ -7,7 +7,7 @@ class Controller_Videos extends Controller_App {
     $ffmpeg = Model::factory('FFmpeg');
 
     $ffmpeg->init(array(
-      'binary_path' => '/opt/local/bin/',
+      'binary_path' => Kohana::$config->load('app.ffmpeg_path'),
       'input_path' => '/var/www/davos/application/data/user/',
       'output_path' => '/var/www/davos/application/data/user/',
       'output_extension' => 'mp4',
@@ -24,7 +24,7 @@ class Controller_Videos extends Controller_App {
 	  $ffmpeg = Model::factory('FFmpeg');
 
     $ffmpeg->init(array(
-      'binary_path' => '/opt/local/bin/',
+      'binary_path' => Kohana::$config->load('app.ffmpeg_path'),
       'filename' => 'source.mp4',
       'input_path' => '/var/www/davos/application/data/video/',
       'output_path' => '/var/www/davos/application/data/video/frames/',
@@ -40,7 +40,7 @@ class Controller_Videos extends Controller_App {
     $ffmpeg = Model::factory('FFmpeg');
 
     $ffmpeg->init(array(
-      'binary_path' => '/opt/local/bin/',
+      'binary_path' => Kohana::$config->load('app.ffmpeg_path'),
       'filename' => 'source.mp4',
       'input_path' => '/var/www/davos/application/data/video/',
       'output_path' => '/var/www/davos/application/data/audio/',
