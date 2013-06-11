@@ -243,13 +243,15 @@ class Controller_App extends Controller {
       $this->_create_other_formats();
 
       // $stats = Profiler::stats(array($total_token));
+
+      $this->redirect('/app/video/'.$this->_fb_user_id);
     }
     catch (Exception $e)
     {
-      die($e->getMessage());
-    }
+      Session::instance()->set('flash', $e->getMessage());
 
-    $this->redirect('/app/video/'.$this->_fb_user_id);
+      $this->redirect('/');
+    }
   }
 
   protected function _add_audio()
