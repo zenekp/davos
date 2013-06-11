@@ -10,8 +10,6 @@ class Controller_App extends Controller {
 
   protected $_users_path;
 
-  public $binary_path = '/opt/local/bin/';
-
   public $layout;
 
   public $view;
@@ -75,7 +73,7 @@ class Controller_App extends Controller {
     }
     catch ( Exception $e )
     {
-      Session::instance()->write('flash', $e->getMessage());
+      Session::instance()->set('flash', $e->getMessage());
 
       $this->redirect('/');
     }
@@ -104,7 +102,7 @@ class Controller_App extends Controller {
     }
     catch (Exception $e)
     {
-      Session::instance()->write('flash', $e->getMessage());
+      Session::instance()->set('flash', $e->getMessage());
 
       $this->redirect('/');
     }
@@ -113,7 +111,7 @@ class Controller_App extends Controller {
   protected function _create_source_image()
   {
     $this->_gm_resize = Model::factory('GM')->init(array(
-      'binary_path' => $this->binary_path,
+      'binary_path' => Kohana::$config->load('app.gm_path'),
       'width' => 190,
       'height' => 190,
       'input_path' => $this->_users_path.$this->_fb_user_id.DIRECTORY_SEPARATOR.'image'.DIRECTORY_SEPARATOR,
@@ -127,7 +125,7 @@ class Controller_App extends Controller {
     $this->_gm_resize->resize();
 
     $this->_gm_merge = Model::factory('GM')->init(array(
-      'binary_path' => $this->binary_path,
+      'binary_path' => Kohana::$config->load('app.gm_path'),
       'image_path' => APPPATH.'data'.DIRECTORY_SEPARATOR.'image'.DIRECTORY_SEPARATOR,
       'image_file' => 'blank_profile',
       'image_extension' => 'png',
@@ -159,7 +157,7 @@ class Controller_App extends Controller {
     // Validate post data
     if ( ! isset($post['user_id']) && empty($post['user_id']) )
     {
-      Session::instance()->write('flash', 'Couldnt retrieve Facebook User ID');
+      Session::instance()->set('flash', 'Couldnt retrieve Facebook User ID');
 
       $this->redirect('/');
     }
@@ -183,7 +181,7 @@ class Controller_App extends Controller {
       ));
 
       $this->_gm_distort = Model::factory('GM')->init(array(
-        'binary_path' => $this->binary_path,
+        'binary_path' => Kohana::$config->load('app.gm_path'),
         'width' => $this->_source_image->width,
         'height' => $this->_source_image->height,
         'input_path' => $this->_users_path.$this->_fb_user_id.DIRECTORY_SEPARATOR.'image'.DIRECTORY_SEPARATOR,
@@ -203,7 +201,7 @@ class Controller_App extends Controller {
       ));
 
       $this->_gm_merge = Model::factory('GM')->init(array(
-        'binary_path' => $this->binary_path,
+        'binary_path' => Kohana::$config->load('app.gm_path'),
         'image_path' => APPPATH.'data'.DIRECTORY_SEPARATOR.'video'.DIRECTORY_SEPARATOR.'frames'.DIRECTORY_SEPARATOR,
         'image_file' => '',
         'image_extension' => 'jpg',
@@ -226,7 +224,7 @@ class Controller_App extends Controller {
       $ffmpeg = Model::factory('FFmpeg');
 
       $ffmpeg->init(array(
-        'binary_path' => $this->binary_path,
+        'binary_path' => Kohana::$config->load('app.ffmpeg_path'),
         'filename' => 'source.mp4',
         'input_path' => $this->_users_path,
         'output_path' => DOCROOT.'media'.DIRECTORY_SEPARATOR.'video'.DIRECTORY_SEPARATOR,
@@ -259,7 +257,7 @@ class Controller_App extends Controller {
     $ffmpeg = Model::factory('FFmpeg');
 
     $ffmpeg->init(array(
-      'binary_path' => $this->binary_path,
+      'binary_path' => Kohana::$config->load('app.ffmpeg_path'),
       'input_path' => DOCROOT.'media'.DIRECTORY_SEPARATOR.'video'.DIRECTORY_SEPARATOR.$this->_fb_user_id.DIRECTORY_SEPARATOR,
       'input_file' => 'soundless',
       'input_extension' => 'mp4',
@@ -282,7 +280,7 @@ class Controller_App extends Controller {
     $ffmpeg = Model::factory('FFmpeg');
 
     $ffmpeg->init(array(
-      'binary_path' => $this->binary_path,
+      'binary_path' => Kohana::$config->load('app.ffmpeg_path'),
       'input_path' => DOCROOT.'media'.DIRECTORY_SEPARATOR.'video'.DIRECTORY_SEPARATOR.$this->_fb_user_id.DIRECTORY_SEPARATOR,
       'input_file' => 'output',
       'input_extension' => 'mp4',
@@ -394,7 +392,7 @@ class Controller_App extends Controller {
       throw new Exception('No input extension set for image');
     }
 
-    $image = Model::factory('image')->init(array(
+    $image = Model::factory('Image')->init(array(
       'input_extension' => $data['input_extension'],
       'input_file' => $data['input_file'],
       'input_path' => $data['input_path'],

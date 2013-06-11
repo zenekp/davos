@@ -1,6 +1,6 @@
 <h1><a href="#" onclick="login();" id="fb_connect">Connect to Facebook</a></h1>
 
-<?php if ( ! empty($flash) ) : ?>
+<?php if ( isset($flash) && ! empty($flash) ) : ?>
   <h2><?php echo $flash ?></h2>
 <?php endif ?>
 
