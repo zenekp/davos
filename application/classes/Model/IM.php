@@ -1,10 +1,10 @@
 <?php defined('SYSPATH') OR die('No direct script access.');
 
-class Model_GM extends Model {
+class Model_IM extends Model {
 
   public function distort( $data = array() )
-  { // -virtual-pixel transparent
-    $command = '%binary_path%convert   %input_path%%input_file%.%input_extension% -matte +distort Perspective';
+  {
+    $command = '%binary_path%convert -virtual-pixel transparent %input_path%%input_file%.%input_extension% -matte +distort Perspective';
 
     $coords = '\'%blox%,%bloy% %bldx%,%bldy% %tlox%,%tloy% %tldx%,%tldy% %trox%,%troy% %trdx%,%trdy% %brox%,%broy% %brdx%,%brdy%\'';
 

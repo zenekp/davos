@@ -110,8 +110,8 @@ class Controller_App extends Controller {
 
   protected function _create_source_image()
   {
-    $this->_gm_resize = Model::factory('GM')->init(array(
-      'binary_path' => Kohana::$config->load('app.gm_path'),
+    $this->_im_resize = Model::factory('IM')->init(array(
+      'binary_path' => Kohana::$config->load('app.im_path'),
       'width' => 190,
       'height' => 190,
       'input_path' => $this->_users_path.$this->_fb_user_id.DIRECTORY_SEPARATOR.'image'.DIRECTORY_SEPARATOR,
@@ -122,10 +122,10 @@ class Controller_App extends Controller {
       'output_extension' => 'jpg',
     ));
 
-    $this->_gm_resize->resize();
+    $this->_im_resize->resize();
 
-    $this->_gm_merge = Model::factory('GM')->init(array(
-      'binary_path' => Kohana::$config->load('app.gm_path'),
+    $this->_im_merge = Model::factory('IM')->init(array(
+      'binary_path' => Kohana::$config->load('app.im_path'),
       'image_path' => APPPATH.'data'.DIRECTORY_SEPARATOR.'image'.DIRECTORY_SEPARATOR,
       'image_file' => 'blank_profile',
       'image_extension' => 'png',
@@ -141,7 +141,7 @@ class Controller_App extends Controller {
       'num' => '',
     ));
 
-    $this->_gm_merge->merge();
+    $this->_im_merge->merge();
   }
 
 
@@ -180,8 +180,8 @@ class Controller_App extends Controller {
         'input_path' => $this->_users_path.$this->_fb_user_id.DIRECTORY_SEPARATOR.'image'.DIRECTORY_SEPARATOR,
       ));
 
-      $this->_gm_distort = Model::factory('GM')->init(array(
-        'binary_path' => Kohana::$config->load('app.gm_path'),
+      $this->_im_distort = Model::factory('IM')->init(array(
+        'binary_path' => Kohana::$config->load('app.im_path'),
         'width' => $this->_source_image->width,
         'height' => $this->_source_image->height,
         'input_path' => $this->_users_path.$this->_fb_user_id.DIRECTORY_SEPARATOR.'image'.DIRECTORY_SEPARATOR,
@@ -200,8 +200,8 @@ class Controller_App extends Controller {
         'broy' => $this->_source_image->height, // bottom-right-origin-y
       ));
 
-      $this->_gm_merge = Model::factory('GM')->init(array(
-        'binary_path' => Kohana::$config->load('app.gm_path'),
+      $this->_im_merge = Model::factory('GM')->init(array(
+        'binary_path' => Kohana::$config->load('app.im_path'),
         'image_path' => APPPATH.'data'.DIRECTORY_SEPARATOR.'video'.DIRECTORY_SEPARATOR.'frames'.DIRECTORY_SEPARATOR,
         'image_file' => '',
         'image_extension' => 'jpg',
@@ -349,9 +349,9 @@ class Controller_App extends Controller {
 
       $coords['num'] = $num;
 
-      $this->_gm_distort->distort($coords);
+      $this->_im_distort->distort($coords);
 
-      $this->_gm_merge->merge(array(
+      $this->_im_merge->merge(array(
         'num' => $num,
         'offset' => $offset,
       ));
