@@ -200,7 +200,7 @@ class Controller_App extends Controller {
         'broy' => $this->_source_image->height, // bottom-right-origin-y
       ));
 
-      $this->_im_merge = Model::factory('GM')->init(array(
+      $this->_im_merge = Model::factory('IM')->init(array(
         'binary_path' => Kohana::$config->load('app.im_path'),
         'image_path' => APPPATH.'data'.DIRECTORY_SEPARATOR.'video'.DIRECTORY_SEPARATOR.'frames'.DIRECTORY_SEPARATOR,
         'image_file' => '',
