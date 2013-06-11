@@ -3,8 +3,8 @@
 class Model_GM extends Model {
 
   public function distort( $data = array() )
-  {
-    $command = '%binary_path%convert -virtual-pixel transparent %input_path%%input_file%.%input_extension% -matte +distort Perspective';
+  { // -virtual-pixel transparent
+    $command = '%binary_path%convert   %input_path%%input_file%.%input_extension% -matte +distort Perspective';
 
     $coords = '\'%blox%,%bloy% %bldx%,%bldy% %tlox%,%tloy% %tldx%,%tldy% %trox%,%troy% %trdx%,%trdy% %brox%,%broy% %brdx%,%brdy%\'';
 
