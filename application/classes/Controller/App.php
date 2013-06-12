@@ -1,5 +1,5 @@
 <?php defined('SYSPATH') or die('No direct script access.');
-
+ini_set('max_execution_time', 300);
 class Controller_App extends Controller {
 
   protected $_tracking_data;
