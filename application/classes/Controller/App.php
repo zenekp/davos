@@ -293,7 +293,7 @@ class Controller_App extends Controller {
     $ffmpeg->convert(array(
       'user_id' => $this->_fb_user_id,
       'output_extension' => 'ogg',
-      'codec' => 'libtheora',
+      'codec' => Kohana::$config->load('app.ogg_codec'),
     ));
 
     $ffmpeg->convert(array(
