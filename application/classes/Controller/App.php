@@ -270,7 +270,7 @@ class Controller_App extends Controller {
       'audio_file' => 'audio',
       'audio_extension' => 'mp3',
       'vcodec' => 'libx264',
-      'acodec' => 'libfaac',
+      'acodec' => Kohana::$config->load('app.audio_codec'),
       'audio_frequency' => '48000', // -ar
     ));
 
